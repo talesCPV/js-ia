@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IA</title>
+    <style>
+        .main{
+            margin: auto;
+            padding: 20px;
+            background-color: aquamarine;
+            width: 80%;
+            height: auto;
+        }
+        .newOne{
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        select,input{
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+
+    </style>
+</head>
+<body>
+    
+
+    <div class="main">
+        <div class="newOne">
+            <div>
+                <label for="edtName">Nome</label>
+                <input type="text" id="edtName">
+            </div>
+            <div>
+                <label for="cmbGeneration">Pais</label>
+                <select id="cmbGeneration"></select>
+            </div>
+            <button id="btnCreate">Create</button>
+            <select id="cmbId" size="30"></select>
+        </div>
+
+
+
+
+    </div>
+
+
+</body>
+<script>
+
+    class Neuronio{
+        constructor(N,P=''){
+
+            this.name = P=='' ? N : N +'-'+P.name
+            this.parent = P=='' ? null : P
+            this.child = []
+            this.value = 0
+            this.generation = this.getGeneration(this)
+            this.addChild(this)
+
+        }
+
+    }
+
+    Neuronio.prototype.getGeneration = (N,G=0)=>{
+        G++
+        return N.parent==null ? G :N.parent.getGeneration(N.parent,G)
+    }
+
+    Neuronio.prototype.addChild = (C)=>{
+        C.parent==null ? 0 : C.parent.child.push(C)
+    }
+
+    Neuronio.prototype.getValue = ()=>{
+        return this.value
+    }
+
+    Neuronio.prototype.setValue = (V)=>{
+        this.value = V
+    }
+
+    Neuronio.prototype.addValue = (V)=>{
+        this.value += V
+    }
+
+    Neuronio.prototype.subValue = (V)=>{
+        this.value -= V
+    }
+
+/*  GLOBAL     */
+
+const neuronios = []
+
+/*  FUNCTIONS  */
+
+    fillCombo('cmbGeneration',false)
+    fillCombo('cmbId')
+
+    function sortGen() {
+        function compare( a, b ) {
+            if ( a.generation < b.generation ){
+                return -1;
+            }
+            if ( a.generation > b.generation ){
+                return 1;
+            }
+            return 0;
+        }
+        
+        return neuronios.sort(compare)
+        
+    }
+
+
+    function fillCombo(C,full=true){
+        const sort = sortGen()
+        const combo = document.getElementById(C)
+        combo.innerHTML = full ? '' :'<option value="0">RAIZ</option>' 
+
+
+        let ger = 0
+        for(let i=0; i<sort.length; i++){        
+            if(ger < sort[i].generation){
+                ger = sort[i].generation
+                var generation
+                if(full){
+                    generation = document.createElement('optgroup')
+                    generation.label = `Geração ${ger}`
+                }else{
+                    generation = document.createElement('option')
+                    generation.innerHTML = `Geração ${ger}`
+                    generation.value = ger
+                }
+                combo.appendChild(generation)
+            }
+            if(full){
+                const opt = document.createElement('option')
+                opt.innerHTML = sort[i].name
+                opt.value = i
+                combo.appendChild(opt)
+            }
+        }
+    }
+
+    document.querySelector('#btnCreate').addEventListener('click',()=>{
+
+        const name = document.querySelector('#edtName').value.trim()
+        const G = parseInt(document.querySelector('#cmbGeneration').value.trim())
+
+        if(G==0){
+            neuronios.push(new Neuronio(name))
+        }else{
+            for(let i=0; i<neuronios.length; i++){
+                if(neuronios[i].generation == G){
+                    neuronios.push(new Neuronio(name,neuronios[i]))
+                }
+            }
+
+        }
+
+        fillCombo('cmbGeneration',false)
+        fillCombo('cmbId')
+    })
+
+</script>
+</html>
