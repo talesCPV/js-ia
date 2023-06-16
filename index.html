@@ -23,6 +23,11 @@
             box-sizing: border-box;
         }
 
+        .bottom{
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
 
     </style>
 </head>
@@ -43,7 +48,10 @@
             <select id="cmbId" size="30"></select>
         </div>
 
-
+        <div class="bottom">
+            <input type="text" id="iaValue">
+            <button id="btnSalvar">Salvar</button>
+        </div>
 
 
     </div>
@@ -54,16 +62,13 @@
 
     class Neuronio{
         constructor(N,P=''){
-
             this.name = P=='' ? N : N +'-'+P.name
             this.parent = P=='' ? null : P
             this.child = []
             this.value = 0
             this.generation = this.getGeneration(this)
             this.addChild(this)
-
         }
-
     }
 
     Neuronio.prototype.getGeneration = (N,G=0)=>{
@@ -145,6 +150,11 @@ const neuronios = []
             }
         }
     }
+
+    document.querySelector('#cmbId').addEventListener('click',()=>{
+        const index = parseInt(document.querySelector('#cmbId').value)
+        document.querySelector('#iaValue').value = neuronios[index].value
+    })
 
     document.querySelector('#btnCreate').addEventListener('click',()=>{
 
