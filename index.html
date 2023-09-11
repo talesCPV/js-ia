@@ -61,40 +61,63 @@
 <script>
 
     class Neuronio{
-        constructor(N,P=''){
-            this.name = P=='' ? N : N +'-'+P.name
-            this.parent = P=='' ? null : P
+        constructor(ROOT,N,G){
+            this.index = ROOT.length
+            this.name = N
+            this.generation = G
             this.child = []
-            this.value = 0
-            this.generation = this.getGeneration(this)
-            this.addChild(this)
+            this.parent = []
+
+            for(let i=0; i<ROOT.length; i++){
+                if(ROOT[i].generation == G-1){
+                    const child = new Object
+                    child.name = this.name
+                    child.index = this.index
+                    ROOT[i].child.push(child)
+                    const parent = new Object
+                    parent.name = ROOT[i].name+'-'+this.name
+                    parent.index = ROOT[i].index
+                    parent.value = 0
+                    parent.peso = 0
+                    this.parent.push(parent)
+
+                }else if(ROOT[i].generation == G+1){
+
+                    const child = new Object
+                    child.name = ROOT[i].name
+                    child.index = ROOT[i].index
+                    this.child.push(child)
+                    const parent = new Object
+                    parent.name = this.name+'-'+ROOT[i].name
+                    parent.index = this.index
+                    parent.value = 0
+                    parent.peso = 0
+                    ROOT[i].parent.push(parent)
+                }
+            }
         }
     }
 
-    Neuronio.prototype.getGeneration = (N,G=0)=>{
-        G++
-        return N.parent==null ? G :N.parent.getGeneration(N.parent,G)
-    }
-
-    Neuronio.prototype.addChild = (C)=>{
-        C.parent==null ? 0 : C.parent.child.push(C)
-    }
-
     Neuronio.prototype.getValue = ()=>{
-        return this.value
+        return this.parent.value
+    }
+
+    Neuronio.prototype.getPeso = ()=>{
+        return this.parent.peso
     }
 
     Neuronio.prototype.setValue = (V)=>{
-        this.value = V
+        this.parent.value = V
     }
 
-    Neuronio.prototype.addValue = (V)=>{
-        this.value += V
+    Neuronio.prototype.setPeso = (V)=>{
+        this.parent.peso = V
     }
 
-    Neuronio.prototype.subValue = (V)=>{
-        this.value -= V
+    Neuronio.prototype.getWeigth = ()=>{
+        return this.parent.value * this.parent.peso
     }
+
 
 /*  GLOBAL     */
 
@@ -109,11 +132,11 @@ const neuronios = []
         function compare( a, b ) {
             if ( a.generation < b.generation ){
                 return -1;
-            }
-            if ( a.generation > b.generation ){
+            }else if ( a.generation > b.generation ){
                 return 1;
+            }else{
+                return 0;
             }
-            return 0;
         }
         
         return neuronios.sort(compare)
@@ -123,22 +146,22 @@ const neuronios = []
 
     function fillCombo(C,full=true){
         const sort = sortGen()
+//        const sort = neuronios
         const combo = document.getElementById(C)
         combo.innerHTML = full ? '' :'<option value="0">RAIZ</option>' 
 
-
-        let ger = 0
+        let ger = -1
         for(let i=0; i<sort.length; i++){        
             if(ger < sort[i].generation){
                 ger = sort[i].generation
                 var generation
                 if(full){
                     generation = document.createElement('optgroup')
-                    generation.label = `Geração ${ger}`
+                    generation.label = ger==0 ? 'RAIZ': `Geração ${ger}`
                 }else{
                     generation = document.createElement('option')
                     generation.innerHTML = `Geração ${ger}`
-                    generation.value = ger
+                    generation.value = ger+1
                 }
                 combo.appendChild(generation)
             }
@@ -161,16 +184,7 @@ const neuronios = []
         const name = document.querySelector('#edtName').value.trim()
         const G = parseInt(document.querySelector('#cmbGeneration').value.trim())
 
-        if(G==0){
-            neuronios.push(new Neuronio(name))
-        }else{
-            for(let i=0; i<neuronios.length; i++){
-                if(neuronios[i].generation == G){
-                    neuronios.push(new Neuronio(name,neuronios[i]))
-                }
-            }
-
-        }
+        neuronios.push(new Neuronio(neuronios,name,G))
 
         fillCombo('cmbGeneration',false)
         fillCombo('cmbId')
